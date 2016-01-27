@@ -1,0 +1,2 @@
+socket.o: socket.c socket.h configuration.h
+main.o: main.c configuration.h socket.h

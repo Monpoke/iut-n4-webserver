@@ -1,0 +1,4 @@
+2) Le serveur quitte à la fin de la connexion.
+3) Le serveur n'écoute pas sur cette adresse.
+4) Un seul client est géré.
+5) 

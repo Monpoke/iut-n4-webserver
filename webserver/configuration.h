@@ -8,7 +8,7 @@
 #ifndef CONFIGURATION_H
 #define	CONFIGURATION_H
 
-#define WEBSERVER_PORT 8181
+#define WEBSERVER_PORT 8080
 
 
 #endif	/* CONFIGURATION_H */
