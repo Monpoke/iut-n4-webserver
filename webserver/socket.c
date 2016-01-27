@@ -21,6 +21,9 @@ int creer_serveur(int port) {
         exit(1);
     }
 
+    /**
+     * Can rebind address
+     */
     int optval = 1;
     if (setsockopt(socket_serveur, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof (int)) == -1)
         perror("Can not set  SO_REUSEADDR  option");
