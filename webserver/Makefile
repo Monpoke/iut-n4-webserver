@@ -5,7 +5,7 @@ LD=gcc
 CFLAGS=-Wall -W -Werror
 LDFLAGS=
 # Le nom de l’exécutable à fabriquer
-EXE=pawnee
+EXE=sushila
 # Les variables HEADERS, CFILES et OBJS vont contenir respectivement
 # la listes des fichiers .h, .c et le nom des fichiers .o à fabriquer
 # On utilise la directive particulière $(wildcard ...) qui permet
@@ -25,7 +25,8 @@ all: $(EXE)
 # Cette règle permet de construire l’exécutable. Elle dépend des fichiers
 # .o et effectue l’édition de lien. Rien de nouveau ici
 $(EXE): $(OBJS)
-$(LD) $^ $(LDFLAGS) -o $@
+	$(LD) $^ $(LDFLAGS) -o $@
+
 # Cette règle permet de construire automatiquement les règles
 # de compilation pour chacun des fichiers .c
 # l’option -MM de gcc analyse un fichier .c et
@@ -37,13 +38,13 @@ $(LD) $^ $(LDFLAGS) -o $@
 # Après votre première compilation, regardez le contenu du fichier
 # makefile.dep généré afin de comprendre exactement de quoi il retourne.
 makefile.dep: $(CFILES) $(HEADERS)
-$(CC) -MM $(CFILES) > $@
+	$(CC) -MM $(CFILES) > $@
 # Cette règle efface le fichier de dépendances et les fichiers .o
 clean:
-$(RM) $(OBJS) makefile.dep
+	$(RM) $(OBJS) makefile.dep
 # Cette règle effectue la précédente et efface en plus l’exécutable
 mrproper: clean
-$(RM) $(EXE)
+	$(RM) $(EXE)
 # On inclue le fichier de dépendance qui va contenir les règles
 # de construction des fichiers .o
 

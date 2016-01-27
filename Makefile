@@ -14,4 +14,4 @@ all: $(FOLDERS)
 # Cette règle va lancer make dans le répertoire webserver
 # option -C de make
 webserver:
-make -C webserver
+	make -C webserver
