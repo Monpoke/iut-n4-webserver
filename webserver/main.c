@@ -5,26 +5,46 @@
 #include <sys/types.h>          /* See NOTES */
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <signal.h>
 #include <unistd.h>
 
+/**
+ * Init signals
+ */
+void initialiser_signaux(void) {
+    // ignore signal SIGPIPE
+    if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
+        perror("signal");
+    }
+
+}
+
+/**
+ * Main program
+ * @return 
+ */
 int main() {
     printf("Server launched:\n");
 
 
     int server = creer_serveur(WEBSERVER_PORT);
 
+    // Signals
+    initialiser_signaux();
+    
     /**
      * Get client request
      * @return 
      */
     int socket_client;
     while (1) {
+        printf("Waiting for client\n");
         socket_client = accept(server, NULL, NULL);
         if (socket_client == -1) {
             perror("accept");
             /*  traitement d’erreur  */
             printf("Server error...");
-            //exit(1);
+            exit(1);
         }
         /* On peut  maintenant  dialoguer  avec le  client  */
         const char *message_bienvenue = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin condimentum mollis eros in fringilla.\
@@ -39,13 +59,15 @@ int main() {
         /**
          * Sends a message every second.
          */
-        while(write(socket_client, message_bienvenue, strlen(message_bienvenue)) != -1){
-            printf("Sendmessage...\n");
+        while (write(socket_client, message_bienvenue, strlen(message_bienvenue)) != -1) {
+            printf("Sending welcome message...\n");
             sleep(1);
         }
-        
+
     }
 
     return 0;
 
 }
+
+
