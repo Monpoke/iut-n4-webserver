@@ -57,7 +57,7 @@ int main() {
         n risus magna, aliquet in sollicitudin nec, finibus non enim.\n\n";
 
         /**
-         * Sends a message every second.
+         * Sends a message every second
          */
         while (write(socket_client, message_bienvenue, strlen(message_bienvenue)) != -1) {
             printf("Sending welcome message...\n");
