@@ -40,7 +40,7 @@ void clientLoop(int ID, int socket_client) {
     do{
         fgets(buffer, sizeof buffer,file);
         
-        fprintf(file,"<Sushila> %s",buffer);
+        fprintf(stdout,buffer);
 
     }while(1);
 
