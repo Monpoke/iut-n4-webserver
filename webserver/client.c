@@ -26,6 +26,20 @@ void clientLoop(int ID, int socket_client) {
         perror("Error welcome message");
     }
 
+    /**
+     * TMP BUFFER
+     * @param ID
+     * @param socket_client
+     */
+    char buffer[255];
+    int nbRead = 0;
+    nbRead = read(socket_client, buffer, 255);
+
+    if (nbRead == 0) {
+    } // compilo warning, wait...
+
+    printf("Received: %s\n", buffer);
 
 
+    exit(0);
 }

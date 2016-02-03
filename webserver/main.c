@@ -16,6 +16,21 @@
 int CLIENT_ID = 0;
 
 /**
+ * Process signals
+ * @param sig
+ */
+void traitement_signal(int sig) {
+    printf("Signal received: %d\n", sig);
+
+    int status = 0;
+
+    // kill zombies
+    while (waitpid(-1, &status, WNOHANG)!=-1) {
+    }
+
+}
+
+/**
  * Init signals
  */
 void initialiser_signaux(void) {
@@ -23,9 +38,20 @@ void initialiser_signaux(void) {
     if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
         perror("signal");
     }
-
+    
+    struct sigaction sa;
+    sa.sa_handler = traitement_signal;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
+        perror("sigaction(SIGCHLD)");
+    }
 }
 
+/**
+ * Listens to clients
+ * @param server
+ */
 void createClient(int server) {
 
 
@@ -38,6 +64,9 @@ void createClient(int server) {
         socket_client = accept(server, NULL, NULL);
         CLIENT_ID++;
 
+
+
+
         if (socket_client == -1) {
             perror("accept");
             /*  traitement d’erreur  */
@@ -48,11 +77,12 @@ void createClient(int server) {
 
         pid_t pid = fork();
 
-
+        // Call client
         if (pid == 0) {
             clientLoop(CLIENT_ID, socket_client);
-
         } else {
+
+
             close(socket_client);
         }
 
