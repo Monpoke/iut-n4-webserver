@@ -64,16 +64,11 @@ void createClient(int server) {
         socket_client = accept(server, NULL, NULL);
         CLIENT_ID++;
 
-
-
-
         if (socket_client == -1) {
             perror("accept");
             /*  traitement d’erreur  */
             printf("Server error...");
         }
-
-
 
         pid_t pid = fork();
 
