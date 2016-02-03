@@ -33,13 +33,27 @@ void clientLoop(int ID, int socket_client) {
      */
     char buffer[255];
     int nbRead = 0;
-    nbRead = read(socket_client, buffer, 255);
+    do {
 
-    if (nbRead == 0) {
-    } // compilo warning, wait...
+        nbRead = read(socket_client, buffer, 255);
 
-    printf("Received: %s\n", buffer);
+        // just end
+        buffer[nbRead] = '\0';
+        printf("Received: %s\n", buffer);
 
+        
+        /**
+         * REPLY MESSAGE
+         * @param ID
+         * @param socket_client
+         */
+        if (write(socket_client, buffer, nbRead) != -1) {
+            printf("Sending welcome message to %d...\n", ID);
+        } else {
+            perror("Error welcome message");
+        }
+        
+    } while (nbRead>0);
 
     exit(0);
 }
