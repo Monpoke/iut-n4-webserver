@@ -12,6 +12,7 @@ void clientLoop(int ID, int socket_client);
 void processHeaderLine(int socket,int nb, char buffer[]);
 void callError(int socket,int nb);
 void removeSpecialCar(char *buffer);
+void showWelcome(int socket_client);
 
 
 #endif	/* CLIENT_H */

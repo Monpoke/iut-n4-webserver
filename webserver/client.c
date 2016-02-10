@@ -14,19 +14,19 @@
 
 
 void clientLoop(int ID, int socket_client) {
-
+    ID = ID;
     /* On peut  maintenant  dialoguer  avec le  client  */
-    const char *message_bienvenue = "Welcome ON Sushila SERVER!\n\n";
+   // const char *message_bienvenue = "Welcome ON Sushila SERVER!\n\n";
 
     /**
      * Sends a message every second.
      */
-    if (write(socket_client, message_bienvenue, strlen(message_bienvenue)) != -1) {
+  /*  if (write(socket_client, message_bienvenue, strlen(message_bienvenue)) != -1) {
         printf("Sending welcome message to %d...\n", ID);
     } else {
         perror("Error welcome message");
     }
-
+*/
     /**
      * TMP BUFFER
      * @param ID
@@ -56,13 +56,19 @@ void clientLoop(int ID, int socket_client) {
 
             nbLine++;
 
-            fprintf(stdout,buffer);
+            //fprintf(stdout,buffer);
 
             processHeaderLine(socket_client,nbLine, buffer);
 
+            if(strlen(buffer)==0){
+                resume=0;
+            }
         }
 
     }while(resume==1);
+
+
+    showWelcome(socket_client);
 
     exit(0);
 }
@@ -104,7 +110,19 @@ void processHeaderLine(int socket_client, int nb, char buffer[]){
 void callError(int socket_client, int number){
     number+=1;
     
-    const char * errorMessage= "HTTP/1.1 400 Bad Request\nConnection: close\nContent-Length: 17\n400 Bad request\n";
+    const char * errorMessage= "HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 17\r\n\r\n400 Bad request\r\n";
+
+    if(write(socket_client, errorMessage, strlen(errorMessage))){
+
+    }
+
+    close(socket_client);
+
+}
+
+void showWelcome(int socket_client){
+    
+    const char * errorMessage= "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: 8\r\n\r\n200 OK\r\n";
 
     if(write(socket_client, errorMessage, strlen(errorMessage))){
 
