@@ -3,3 +3,7 @@
 3) Le serveur n'écoute pas sur cette adresse.
 4) Un seul client est géré.
 5) 
+
+Chap 5)
+	5.2.1.3) Le message envoyé par le client web est l'entete http, l'authentification et l'hote.
+	5.2.1.4) Les trois constituants s'appellent la Request-Line
