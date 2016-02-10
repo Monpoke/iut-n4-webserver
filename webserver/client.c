@@ -37,12 +37,17 @@ void clientLoop(int ID, int socket_client) {
 
     file = fdopen(socket_client,"w+");
 
-    do{
-        fgets(buffer, sizeof buffer,file);
-        
-        fprintf(stdout,buffer);
+    int resume = 1;
 
-    }while(1);
+    do{
+
+        if(fgets(buffer, sizeof buffer,file) == NULL){
+            resume = 0;
+        }else{
+            fprintf(stdout,buffer);
+        }
+
+    }while(resume);
 
     exit(0);
 }
