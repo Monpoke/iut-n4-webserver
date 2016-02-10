@@ -49,7 +49,7 @@ void clientLoop(int ID, int socket_client) {
     int nbLine=0;
     do{
 
-        if(fgets(buffer, sizeof buffer,file) == NULL){
+        if(fgets(buffer, sizeof buffer,file) == NULL){  
             resume = 0;
         }else{
             removeSpecialCar(buffer);
@@ -78,26 +78,36 @@ void processHeaderLine(int socket_client, int nb, char buffer[]){
 
     if(nb==1){
         // check GET method
-        if(strncmp(buffer, "GET",3) == 0){
+        if(strncmp(buffer, "GET ",4) == 0){
             const char separator[1] = " ";
             char *token;
 
             token = strtok(buffer,separator);
 
-            int i = 0;
+            // FILE
+            token = strtok(NULL,separator);
 
-            for(i=0;i<2;i++){
-                token = strtok(NULL,separator);
+            if(strcmp(token, "/")>0){
+                callError(socket_client, 404);
             }
 
-            int j =0;
 
-            while(token[j] != '/'){
-                j++;
-            }
+            //  VERSION
+            token = strtok(NULL,separator);
 
-            if(token[j+1] != '1' || (token[j+3] != '0' && token[j+3] != '1')){
+            // CHECK REQUEST LINE
+            if(token == NULL){
                 callError(socket_client,400);
+            } else {
+                int j =0;
+
+                while(token[j] != '/'){
+                    j++;
+                }
+
+                if(token[j+1] != '1' || (token[j+3] != '0' && token[j+3] != '1')){
+                    callError(socket_client,400);
+                }
             }
 
         }else{
@@ -124,6 +134,8 @@ void callError(int socket_client, int number){
         strcpy(sentence, "400 Bad request");
         break;
     }
+
+
     strcat(sentence, "\r\n");
 
     char nbSentence[10];
@@ -133,20 +145,16 @@ void callError(int socket_client, int number){
     strcat(head, nbSentence);
     strcat(head, "\r\n\r\n");
 
-    printf("%s\n",head);
-
-//    const char * errorMessage= "HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 17\r\n\r\n400 Bad request\r\n";
-
     char final[600];
     strcpy(final, head);
     strcat(final, sentence);
-
 
     if(write(socket_client, final, strlen(final))){
 
     }
 
     close(socket_client);
+    exit(0);
 
 }
 
