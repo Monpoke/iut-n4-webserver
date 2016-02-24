@@ -1,3 +1,3 @@
 socket.o: socket.c socket.h configuration.h
-client.o: client.c configuration.h socket.h client.h
-main.o: main.c configuration.h socket.h client.h
+client.o: client.c configuration.h socket.h http.h client.h
+main.o: main.c configuration.h socket.h client.h http.h
