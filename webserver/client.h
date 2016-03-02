@@ -18,6 +18,7 @@ void removeSpecialCar(char *buffer);
 void showWelcome(int socket_client);
 char *fgets_or_exit(char *buffer, int size, FILE *stream);
 int parse_http_request(const char *request_line, http_request *request);
+void send_response(int client, int code, const char *reason_phrase, const char * message_body);
 
 #endif	/* CLIENT_H */
 
