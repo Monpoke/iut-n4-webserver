@@ -19,6 +19,7 @@ typedef struct  {
     int major_version;
     int minor_version;
     char *url;
+    char *absolute_url;
 } http_request;
 
 

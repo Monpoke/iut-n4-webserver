@@ -13,6 +13,7 @@
 #include "tools.h"
 #include  "http.h"
 #include "client.h"
+#include "fileReader.h"
 
 void clientLoop(int ID, int socket_client) {
     ID = ID;
@@ -39,12 +40,8 @@ void clientLoop(int ID, int socket_client) {
 
     int firstDataReceived = 0;
     while (1) {
-
-
         fgets_or_exit(contentLineClient, sizeof contentLineClient, clientFile);
         removeSpecialCar(contentLineClient);
-
-        printf("RECEIVED: %s\n", contentLineClient);
 
 
         /**
@@ -56,7 +53,6 @@ void clientLoop(int ID, int socket_client) {
              * REQUEST-LINE
              */
             if (nbLine == 1) {
-                printf("PARSE HTTP REQUESTTTTT\n");
                 BAD_REQUEST = parse_http_request(contentLineClient, &client_request);
             } else {
                 // PROCESS OTHER HEADERS IF NEEDED
@@ -70,7 +66,6 @@ void clientLoop(int ID, int socket_client) {
             fprintf(stdout, contentLineClient);
 
         } else if (firstDataReceived == 1) {
-            printf("ALERT ALERT, BREAK\n\n");
             break;
         }
 
@@ -94,9 +89,6 @@ void clientLoop(int ID, int socket_client) {
     }
 
 
-
-
-    // showWelcome(socket_client);
 
     exit(0);
 }
@@ -130,8 +122,6 @@ int parse_http_request(const char *request_line, http_request *request) {
         for (i = 0; i < len; ++i)
             free(list[i]);
         free(list);
-
-        printf("COUCOU, TU BUGUES\n\n");
         
         return 0;
 
@@ -150,11 +140,13 @@ int parse_http_request(const char *request_line, http_request *request) {
      * HTTP URL
      */
     request->url = list[1];
-
+    request->absolute_url = rewrite_url(list[1]);
+    
+    
     /**
      * Version 
      */
-    if (strlen(list[2]) == 8 && strncmp(list[2], "HTTP/", 5) == 0/*&& (strcmp(list[2], "HTTP/1.0") == 0 || strcmp(list[2], "HTTP/1.1") == 0)*/) {
+    if (strlen(list[2]) == 8 && strncmp(list[2], "HTTP/", 5) == 0) {
         char *miniVersion = list[2];
         request->major_version = miniVersion[5] - '0';
 

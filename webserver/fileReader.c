@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "fileReader.h"
+#include "tools.h"
 
 
 /**
@@ -19,19 +20,25 @@
  * @return 
  */
 char *rewrite_url(char *url) {
+    printf("URL: %s\n", url);
+    
+    //url=strdup(url);
+   
    
     if(strcmp(url, "/") == 0){
         return "index.html";
     }
     
-    char str[(int)strlen(url)];
+   // char absolute[255];
+   // strcpy(absolute, url);
     
-    strcpy(str,url);
+    char *cut = strchr(url, '?');
     
-    const char s[2] = "?";
-    char *token;
-     
-    token = strtok(str,s);
+    if(cut != NULL){
+        int index = cut - url;
+        url[index] = '\0';
+    }
+        
+    return url;
     
-    return token; 
 }

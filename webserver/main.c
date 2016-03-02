@@ -95,10 +95,6 @@ void createClient(int server) {
 int main() {
     printf("Server launched:\n");
 
-    
-    printf("COUCOU: %s\n\n", rewrite_url("/fichier?truc=1"));
-    
-
     int server = creer_serveur(WEBSERVER_PORT);
 
     // Signals
