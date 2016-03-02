@@ -15,6 +15,7 @@ typedef enum   {
 
 typedef struct  {
     http_method method;
+    int bad_request;
     int major_version;
     int minor_version;
     char *url;

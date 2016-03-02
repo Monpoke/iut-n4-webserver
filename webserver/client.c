@@ -25,13 +25,14 @@ void clientLoop(int ID, int socket_client) {
     FILE *file;
     file = fdopen(socket_client, "w+");
 
-    int nbLine = 0;
+    int nbLine = 1;
 
 
     /**
      * DECLARE REQUESTS AND METHODS
      */
     http_request client_request;
+    client_request.bad_request=0;
 
 
     int firstDataReceived = 0;
@@ -41,6 +42,9 @@ void clientLoop(int ID, int socket_client) {
         fgets_or_exit(contentLineClient, sizeof contentLineClient, file);
         removeSpecialCar(contentLineClient);
 
+        printf("RECEIVED: %s\n", contentLineClient);
+        
+        
         /**
          * If client sends 
          */
@@ -50,11 +54,13 @@ void clientLoop(int ID, int socket_client) {
              * REQUEST-LINE
              */
             if (nbLine == 1) {
+                printf("PARSE HTTP REQUESTTTTT\n");
                 parse_http_request(contentLineClient, &client_request);
             } else {
                 // PROCESS OTHER HEADERS IF NEEDED
             }
 
+            
             firstDataReceived = 1;
             nbLine++;
 
@@ -69,11 +75,16 @@ void clientLoop(int ID, int socket_client) {
     }
 
 
-
-    if (http_request.method == HTTP_UNSUPPORTED) {
+    /**
+     * Sends response 
+     */
+    if (client_request.bad_request != 0) {
+        send_response(socket_client, 400, "Bad Request", "Bad Request\r\n");
+    } 
+    else if (client_request.method == HTTP_UNSUPPORTED) {
         send_response(socket_client, 405, "Method Not Allowed", "Method Not Allowed\r\n");
     } 
-    else if(strcmp(http_request.url, "/") == 0){
+    else if(strcmp(client_request.url, "/") == 0){
         send_response(socket_client, 200, "OK", "<h1>Hello World!</h1> <p>My first content</p>\r\n");
     } else {
         send_response(socket_client, 404, "Not Found", "<h1>My bad!</h1> <p>Sorry, this page doesn't exists...</p>\r\n");
@@ -119,7 +130,8 @@ int parse_http_request(const char *request_line, http_request *request) {
             free(list[i]);
         free(list);
 
-
+        request->bad_request=1;
+        
         return 0;
 
     }
@@ -127,7 +139,7 @@ int parse_http_request(const char *request_line, http_request *request) {
     /**
      * Find supported method
      */
-    if (strncmp(list[0], "GET", 3) && strlen(list[0]) == 3) {
+    if (strcmp(list[0], "GET") == 0) {
         request->method = HTTP_GET;
     } else {
         returnCode = 0;
@@ -137,21 +149,24 @@ int parse_http_request(const char *request_line, http_request *request) {
     /**
      * HTTP URL
      */
+    printf("I FOUND URL %s\n\n", list[1]);
+    
     request->url = list[1];
 
     /**
      * Version 
      */
-    if (strlen(list[2]) == 8 && (strncmp(list[2], "HTTP/1.0", 8) || strncmp(list[2], "HTTP/1.1", 8))) {
+    if (strlen(list[2]) == 8 && (strcmp(list[2], "HTTP/1.0") == 0 || strcmp(list[2], "HTTP/1.1") == 0)) {
         request->major_version = 1;
         char *miniVersion = list[2];
         request->minor_version = miniVersion[7] - '0';
     } else {
+        // badd HTTP VERSION
+        request->bad_request=1;
         returnCode = 0;
     }
 
-
-
+    
     return returnCode;
 }
 
