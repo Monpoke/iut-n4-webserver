@@ -12,7 +12,7 @@
 #include "http.h"
 
 void clientLoop(int ID, int socket_client);
-void processHeaderLine(int socket,int nb, char buffer[]);
+void processHeaderLine(int socket,int lineNumber, char buffer[],http_request *req);
 void callError(int socket,int nb);
 void removeSpecialCar(char *buffer);
 void showWelcome(int socket_client);

@@ -10,113 +10,62 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include "tools.h"
 #include  "http.h"
 #include "client.h"
 
-char *strdup(const char *src) {
-    char *tmp = malloc(strlen(src) + 1);
-    if (tmp)
-        strcpy(tmp, src);
-    return tmp;
-}
-
-void explode(const char *src, const char *tokens, char ***list, size_t *len) {
-    if (src == NULL || list == NULL || len == NULL)
-        return;
-
-    char *str, *copy, **_list = NULL, **tmp;
-    *list = NULL;
-    *len = 0;
-
-    copy = strdup(src);
-    if (copy == NULL)
-        return;
-
-    str = strtok(copy, tokens);
-    if (str == NULL)
-        goto free_and_exit;
-
-    _list = realloc(NULL, sizeof *_list);
-    if (_list == NULL)
-        goto free_and_exit;
-
-    _list[*len] = strdup(str);
-    if (_list[*len] == NULL)
-        goto free_and_exit;
-    (*len)++;
-
-
-    while ((str = strtok(NULL, tokens))) {
-        tmp = realloc(_list, (sizeof *_list) * (*len + 1));
-        if (tmp == NULL)
-            goto free_and_exit;
-
-        _list = tmp;
-
-        _list[*len] = strdup(str);
-        if (_list[*len] == NULL)
-            goto free_and_exit;
-        (*len)++;
-    }
-
-
-free_and_exit:
-    *list = _list;
-    free(copy);
-}
 
 void clientLoop(int ID, int socket_client) {
     ID = ID;
-    /* On peut  maintenant  dialoguer  avec le  client  */
-    // const char *message_bienvenue = "Welcome ON Sushila SERVER!\n\n";
-
-    /**
-     * Sends a message every second.
-     */
-    /*  if (write(socket_client, message_bienvenue, strlen(message_bienvenue)) != -1) {
-          printf("Sending welcome message to %d...\n", ID);
-      } else {
-          perror("Error welcome message");
-      }
-     */
+   
+    
     /**
      * TMP BUFFER
-     * @param ID
-     * @param socket_client
      */
-    char buffer[4096];
-
-    //  char header[500];
-
-    /*char reqForme[3];
-    reqForme[0] = 'G';
-    reqForme[1] = 'E';
-    reqForme[2] = 'T';
-     */
+    char contentLineClient[4096];
     FILE *file;
-
     file = fdopen(socket_client, "w+");
 
     int nbLine = 0;
 
 
-
+    /**
+     * DECLARE REQUESTS AND METHODS
+     */
+    http_request client_request;
+     
 
     int firstDataReceived = 0;
     while (1) {
 
 
-        fgets_or_exit(buffer, sizeof buffer, file);
-        removeSpecialCar(buffer);
+        fgets_or_exit(contentLineClient, sizeof contentLineClient, file);
+        removeSpecialCar(contentLineClient);
 
-        if (strlen(buffer) > 0) {
+        /**
+         * If client sends 
+         */
+        if (strlen(contentLineClient) > 0) {
+            
+            // check first line
+            if(nbLine==1){
+                /**
+                 * REQUEST-LINE
+                 */
+                parse_http_request(contentLineClient, &client_request);
+                
+                
+            } else {
+                //processHeaderLine(socket_client, nbLine, contentLineClient, &client_request);
+                skip_headers();
+            }
+            
             firstDataReceived = 1;
             nbLine++;
 
-            fprintf(stdout, buffer);
-            printf(" and calling process hl %d\n", nbLine);
+            
+            fprintf(stdout, contentLineClient);
 
-            processHeaderLine(socket_client, nbLine, buffer);
         } else if (firstDataReceived == 1) {
             printf("ALERT ALERT, BREAK\n\n");
             break;
@@ -126,8 +75,7 @@ void clientLoop(int ID, int socket_client) {
 
 
 
-
-
+    
 
 
     showWelcome(socket_client);
@@ -135,28 +83,26 @@ void clientLoop(int ID, int socket_client) {
     exit(0);
 }
 
-void processHeaderLine(int socket_client, int nb, char buffer[]) {
-
-
-
-
-
-
-
-
+void processHeaderLine(int socket_client, int lineNumber, char buffer[], http_request *req) {
 
     socket_client = socket_client;
 
-    if (nb == 1) {
-        http_request req;
-
+    if (lineNumber == 1) {
+        
         printf("PARSE REQUEST:\n");
-        parse_http_request(buffer, &req);
+        parse_http_request(buffer, req);
 
-        printf("REQ.URL: %s\n\n", req.url);
+        printf("REQ.URL: %s\n\n", req->url);
     }
 }
 
+
+/**
+ * Parse the HTTP Request
+ * @param request_line
+ * @param request
+ * @return 
+ */
 int parse_http_request(const char *request_line, http_request *request) {
     request_line = request_line;
     request = request;
@@ -167,19 +113,13 @@ int parse_http_request(const char *request_line, http_request *request) {
     int returnCode = 1;
     
     
-    request->method = HTTP_UNSUPPORTED;
-
-
     // Default method
-
-    printf("COUCOU JHE SUIS LA\n\n");
+    request->method = HTTP_UNSUPPORTED;
 
 
     char **list;
     size_t i, len;
     explode(request_line, " ", &list, &len);
-    for (i = 0; i < len; ++i)
-        printf("%zu: %s\n", i + 1, list[i]);
 
     if (len != 3) {
         /* free list */
