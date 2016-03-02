@@ -90,7 +90,7 @@ void clientLoop(int ID, int socket_client) {
     } else if (strcmp(client_request.url, "/") == 0) {
         send_response(clientFile, 200, "OK", "<h1>Hello World!</h1> <p>My first content</p>\r\n");
     } else {
-        send_response(clientFile, 404, "Not Found", "<h1>My bad!</h1> <p>Sorry, this page doesn't exists...</p>\r\n");
+        send_response(clientFile, 404, "Not Found", "<h1>My bad! 404 error!</h1> <p>Sorry, this page doesn't exists...</p>\r\n");
     }
 
 
