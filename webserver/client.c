@@ -34,6 +34,8 @@ void clientLoop(int ID, int socket_client) {
     http_request client_request;
     client_request.bad_request = 0;
 
+    int BAD_REQUEST;
+
 
     int firstDataReceived = 0;
     while (1) {
@@ -55,7 +57,7 @@ void clientLoop(int ID, int socket_client) {
              */
             if (nbLine == 1) {
                 printf("PARSE HTTP REQUESTTTTT\n");
-                parse_http_request(contentLineClient, &client_request);
+                BAD_REQUEST = parse_http_request(contentLineClient, &client_request);
             } else {
                 // PROCESS OTHER HEADERS IF NEEDED
             }
@@ -78,13 +80,14 @@ void clientLoop(int ID, int socket_client) {
     /**
      * Sends response 
      */
-    if (client_request.bad_request != 0) {
+     if (BAD_REQUEST == 0) {
         send_response(clientFile, 400, "Bad Request", "Bad Request\r\n");
-    }
+    } else if (!(client_request.major_version == 1 && (client_request.minor_version >= 0 || client_request.minor_version <= 1))) {
+        send_response(clientFile, 505, "HTTP Version not supported", "HTTP Version not supported\r\n");
+    } 
     else if (client_request.method == HTTP_UNSUPPORTED) {
         send_response(clientFile, 405, "Method Not Allowed", "Method Not Allowed\r\n");
-    }
-    else if (strcmp(client_request.url, "/") == 0) {
+    } else if (strcmp(client_request.url, "/") == 0) {
         send_response(clientFile, 200, "OK", "<h1>Hello World!</h1> <p>My first content</p>\r\n");
     } else {
         send_response(clientFile, 404, "Not Found", "<h1>My bad!</h1> <p>Sorry, this page doesn't exists...</p>\r\n");
@@ -128,8 +131,8 @@ int parse_http_request(const char *request_line, http_request *request) {
             free(list[i]);
         free(list);
 
-        request->bad_request = 1;
-
+        printf("COUCOU, TU BUGUES\n\n");
+        
         return 0;
 
     }
@@ -139,24 +142,23 @@ int parse_http_request(const char *request_line, http_request *request) {
      */
     if (strcmp(list[0], "GET") == 0) {
         request->method = HTTP_GET;
-    } else {
-        returnCode = 0;
     }
+
 
 
     /**
      * HTTP URL
      */
-    printf("I FOUND URL %s\n\n", list[1]);
-
     request->url = list[1];
 
     /**
      * Version 
      */
-    if (strlen(list[2]) == 8 && (strcmp(list[2], "HTTP/1.0") == 0 || strcmp(list[2], "HTTP/1.1") == 0)) {
-        request->major_version = 1;
+    if (strlen(list[2]) == 8 && strncmp(list[2], "HTTP/", 5) == 0/*&& (strcmp(list[2], "HTTP/1.0") == 0 || strcmp(list[2], "HTTP/1.1") == 0)*/) {
         char *miniVersion = list[2];
+        request->major_version = miniVersion[5] - '0';
+
+        // minor version
         request->minor_version = miniVersion[7] - '0';
     } else {
         // badd HTTP VERSION
@@ -204,7 +206,7 @@ char *fgets_or_exit(char *buffer, int size, FILE *stream) {
 }
 
 void send_status(FILE *client, int code, const char * reason_phrase) {
-    fprintf(client, "HTTP/1/1 %d %s\r\n", code, reason_phrase);
+    fprintf(client, "HTTP/1.1 %d %s\r\n", code, reason_phrase);
 }
 
 /**
@@ -221,9 +223,10 @@ void send_response(FILE *client, int code, const char *reason_phrase, const char
 
     // connection closed
     fprintf(client, "Connection: close\r\n");
-    
+
     // content length
-    fprintf(client, "Content-length: %zu\r\n", strlen(message_body));;
+    fprintf(client, "Content-length: %zu\r\n", strlen(message_body));
+    ;
 
     fprintf(client, "\r\n");
 
