@@ -22,8 +22,8 @@ void clientLoop(int ID, int socket_client) {
      * TMP BUFFER
      */
     char contentLineClient[4096];
-    FILE *file;
-    file = fdopen(socket_client, "w+");
+    FILE *clientFile;
+    clientFile = fdopen(socket_client, "w+");
 
     int nbLine = 1;
 
@@ -32,19 +32,19 @@ void clientLoop(int ID, int socket_client) {
      * DECLARE REQUESTS AND METHODS
      */
     http_request client_request;
-    client_request.bad_request=0;
+    client_request.bad_request = 0;
 
 
     int firstDataReceived = 0;
     while (1) {
 
 
-        fgets_or_exit(contentLineClient, sizeof contentLineClient, file);
+        fgets_or_exit(contentLineClient, sizeof contentLineClient, clientFile);
         removeSpecialCar(contentLineClient);
 
         printf("RECEIVED: %s\n", contentLineClient);
-        
-        
+
+
         /**
          * If client sends 
          */
@@ -60,7 +60,7 @@ void clientLoop(int ID, int socket_client) {
                 // PROCESS OTHER HEADERS IF NEEDED
             }
 
-            
+
             firstDataReceived = 1;
             nbLine++;
 
@@ -79,15 +79,15 @@ void clientLoop(int ID, int socket_client) {
      * Sends response 
      */
     if (client_request.bad_request != 0) {
-        send_response(socket_client, 400, "Bad Request", "Bad Request\r\n");
-    } 
+        send_response(clientFile, 400, "Bad Request", "Bad Request\r\n");
+    }
     else if (client_request.method == HTTP_UNSUPPORTED) {
-        send_response(socket_client, 405, "Method Not Allowed", "Method Not Allowed\r\n");
-    } 
-    else if(strcmp(client_request.url, "/") == 0){
-        send_response(socket_client, 200, "OK", "<h1>Hello World!</h1> <p>My first content</p>\r\n");
+        send_response(clientFile, 405, "Method Not Allowed", "Method Not Allowed\r\n");
+    }
+    else if (strcmp(client_request.url, "/") == 0) {
+        send_response(clientFile, 200, "OK", "<h1>Hello World!</h1> <p>My first content</p>\r\n");
     } else {
-        send_response(socket_client, 404, "Not Found", "<h1>My bad!</h1> <p>Sorry, this page doesn't exists...</p>\r\n");
+        send_response(clientFile, 404, "Not Found", "<h1>My bad!</h1> <p>Sorry, this page doesn't exists...</p>\r\n");
     }
 
 
@@ -97,8 +97,6 @@ void clientLoop(int ID, int socket_client) {
 
     exit(0);
 }
-
-
 
 /**
  * Parse the HTTP Request
@@ -130,8 +128,8 @@ int parse_http_request(const char *request_line, http_request *request) {
             free(list[i]);
         free(list);
 
-        request->bad_request=1;
-        
+        request->bad_request = 1;
+
         return 0;
 
     }
@@ -150,7 +148,7 @@ int parse_http_request(const char *request_line, http_request *request) {
      * HTTP URL
      */
     printf("I FOUND URL %s\n\n", list[1]);
-    
+
     request->url = list[1];
 
     /**
@@ -162,14 +160,13 @@ int parse_http_request(const char *request_line, http_request *request) {
         request->minor_version = miniVersion[7] - '0';
     } else {
         // badd HTTP VERSION
-        request->bad_request=1;
+        request->bad_request = 1;
         returnCode = 0;
     }
 
-    
+
     return returnCode;
 }
-
 
 /**
  * Clear special characters
@@ -206,6 +203,10 @@ char *fgets_or_exit(char *buffer, int size, FILE *stream) {
     }
 }
 
+void send_status(FILE *client, int code, const char * reason_phrase) {
+    fprintf(client, "HTTP/1/1 %d %s\r\n", code, reason_phrase);
+}
+
 /**
  * Sends response to client
  * @param client
@@ -213,39 +214,24 @@ char *fgets_or_exit(char *buffer, int size, FILE *stream) {
  * @param reason_phrase
  * @param message_body
  */
-void send_response(int client, int code, const char *reason_phrase, const char * message_body) {
+void send_response(FILE *client, int code, const char *reason_phrase, const char * message_body) {
 
-    //send_status(client)
-    
-    // http version
-    write(client, "HTTP/1.1 ", 9);
-
-    // convert int code to string
-    char codeString[3];
-    sprintf(codeString, "%d ", code);
-
-    write(client, codeString, strlen(codeString));
-
-
-    // reason phrase
-    write(client, reason_phrase, strlen(reason_phrase));
+    // send status
+    send_status(client, code, reason_phrase);
 
     // connection closed
-    write(client, "\r\nConnection: close", 19);
-
+    fprintf(client, "Connection: close\r\n");
+    
     // content length
-    char totalLength[10];
-    sprintf(totalLength, "%zu", strlen(message_body));
+    fprintf(client, "Content-length: %zu\r\n", strlen(message_body));;
 
-    // Content length
-    write(client, "\r\nContent-length: ", 18);
-    write(client, totalLength, strlen(totalLength));
-
-    write(client, "\r\n\r\n", 4);
+    fprintf(client, "\r\n");
 
     // message body
-    write(client, message_body, strlen(message_body));
+    fprintf(client, "%s", message_body);
 
+    // sends
+    fflush(client);
 
 }
 
