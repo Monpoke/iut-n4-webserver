@@ -170,64 +170,11 @@ int parse_http_request(const char *request_line, http_request *request) {
     return returnCode;
 }
 
+
 /**
- * Call error
- * @param socket_client
- * @param number
+ * Clear special characters
+ * @param buffer
  */
-void callError(int socket_client, int number) {
-    //char src[20];
-    char head[500], sentence[200];
-
-    strcpy(head, "HTTP/1.1 ");
-
-    switch (number) {
-        case 404:
-            strcat(head, "404 Not Found");
-            strcpy(sentence, "404 Not Found");
-            break;
-
-        default:
-            strcat(head, "400 Bad Request");
-            strcpy(sentence, "400 Bad request");
-            break;
-    }
-
-
-    strcat(sentence, "\r\n");
-
-    char nbSentence[10];
-    sprintf(nbSentence, "%zu", strlen(sentence));
-
-    strcat(head, "\r\nConnection: close\r\nContent-Length: ");
-    strcat(head, nbSentence);
-    strcat(head, "\r\n\r\n");
-
-    char final[600];
-    strcpy(final, head);
-    strcat(final, sentence);
-
-    if (write(socket_client, final, strlen(final))) {
-
-    }
-
-    close(socket_client);
-    exit(0);
-
-}
-
-void showWelcome(int socket_client) {
-
-    const char * errorMessage = "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: 8\r\n\r\n200 OK\r\n";
-
-    if (write(socket_client, errorMessage, strlen(errorMessage))) {
-
-    }
-
-    close(socket_client);
-
-}
-
 void removeSpecialCar(char *buffer) {
 
     int size = strlen(buffer);
@@ -243,6 +190,13 @@ void removeSpecialCar(char *buffer) {
     }
 }
 
+/**
+ * 
+ * @param buffer
+ * @param size
+ * @param stream
+ * @return 
+ */
 char *fgets_or_exit(char *buffer, int size, FILE *stream) {
 
     if (fgets(buffer, size, stream) == NULL) {
@@ -261,6 +215,8 @@ char *fgets_or_exit(char *buffer, int size, FILE *stream) {
  */
 void send_response(int client, int code, const char *reason_phrase, const char * message_body) {
 
+    //send_status(client)
+    
     // http version
     write(client, "HTTP/1.1 ", 9);
 
