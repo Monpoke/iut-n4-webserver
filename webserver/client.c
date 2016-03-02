@@ -70,8 +70,14 @@ void clientLoop(int ID, int socket_client) {
 
 
 
-    send_response(socket_client, 200, "OK", "Bonjour\r\n");
-
+    if (http_request.method == HTTP_UNSUPPORTED) {
+        send_response(socket_client, 405, "Method Not Allowed", "Method Not Allowed\r\n");
+    } 
+    else if(strcmp(http_request.url, "/") == 0){
+        send_response(socket_client, 200, "OK", "<h1>Hello World!</h1> <p>My first content</p>\r\n");
+    } else {
+        send_response(socket_client, 404, "Not Found", "<h1>My bad!</h1> <p>Sorry, this page doesn't exists...</p>\r\n");
+    }
 
 
 
@@ -81,18 +87,7 @@ void clientLoop(int ID, int socket_client) {
     exit(0);
 }
 
-void processHeaderLine(int socket_client, int lineNumber, char buffer[], http_request *req) {
 
-    socket_client = socket_client;
-
-    if (lineNumber == 1) {
-
-        printf("PARSE REQUEST:\n");
-        parse_http_request(buffer, req);
-
-        printf("REQ.URL: %s\n\n", req->url);
-    }
-}
 
 /**
  * Parse the HTTP Request
@@ -253,13 +248,13 @@ void send_response(int client, int code, const char *reason_phrase, const char *
 
     // http version
     write(client, "HTTP/1.1 ", 9);
-    
+
     // convert int code to string
     char codeString[3];
     sprintf(codeString, "%d ", code);
-    
+
     write(client, codeString, strlen(codeString));
-    
+
 
     // reason phrase
     write(client, reason_phrase, strlen(reason_phrase));
@@ -276,7 +271,7 @@ void send_response(int client, int code, const char *reason_phrase, const char *
     write(client, totalLength, strlen(totalLength));
 
     write(client, "\r\n\r\n", 4);
-    
+
     // message body
     write(client, message_body, strlen(message_body));
 
