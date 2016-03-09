@@ -14,6 +14,7 @@
 
 #include "fileReader.h"
 #include "client.h"
+#include "mime.h"
 
 int CLIENT_ID = 0;
 
@@ -111,12 +112,18 @@ char * open_documentroot(int argc, char** argv) {
     return document_root;
 }
 
+
 /**
  * Main program
  * @return 
  */
 int main(int argc, char** argv) {
 
+    
+    // Mimes
+    loadMimes();
+    exit(0);
+    
     // document root
     char* docroot = open_documentroot(argc, argv);
 
@@ -124,7 +131,10 @@ int main(int argc, char** argv) {
     int server = creer_serveur(WEBSERVER_PORT);
     printf("Server launched:\n");
 
-    // Signals
+    // Mimes
+    loadMimes();
+    
+    // Signaux
     initialiser_signaux();
 
     /**
@@ -136,5 +146,3 @@ int main(int argc, char** argv) {
     return 0;
 
 }
-
-

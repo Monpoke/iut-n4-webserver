@@ -1,6 +1,8 @@
 socket.o: socket.c socket.h configuration.h
+mime.o: mime.c configuration.h socket.h fileReader.h mime.h
 client.o: client.c configuration.h socket.h tools.h http.h client.h \
  fileReader.h
 tools.o: tools.c tools.h configuration.h socket.h
-main.o: main.c configuration.h socket.h fileReader.h client.h http.h
+main.o: main.c configuration.h socket.h fileReader.h client.h http.h \
+ mime.h
 fileReader.o: fileReader.c configuration.h socket.h fileReader.h tools.h

@@ -15,6 +15,7 @@ typedef struct  {
 } mime;
 
 
+void loadMimes();
 
 
 #endif	/* MIME_H */
