@@ -11,7 +11,7 @@
 
 #include "http.h"
 
-void clientLoop(int ID, int socket_client);
+void clientLoop(int socket_client, char *docroot);
 void processHeaderLine(int socket,int lineNumber, char buffer[],http_request *req);
 void callError(int socket,int nb);
 void removeSpecialCar(char *buffer);
@@ -20,6 +20,7 @@ char *fgets_or_exit(char *buffer, int size, FILE *stream);
 int parse_http_request(const char *request_line, http_request *request);
 void send_response(FILE* client, int code, const char *reason_phrase, const char * message_body);
 void send_status(FILE *client, int code, const char * reason_phrase);
+void send_file(FILE *client, int file);
 
 #endif	/* CLIENT_H */
 

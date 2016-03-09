@@ -2,7 +2,6 @@
 #include  <string.h>
 #include "configuration.h"
 #include "socket.h"
-#include <sys/types.h>        
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <signal.h>
@@ -15,9 +14,7 @@
 #include "client.h"
 #include "fileReader.h"
 
-void clientLoop(int ID, int socket_client) {
-    ID = ID;
-
+void clientLoop(int socket_client, char * document_root) {
 
     /**
      * TMP BUFFER
@@ -65,31 +62,44 @@ void clientLoop(int ID, int socket_client) {
 
             fprintf(stdout, contentLineClient);
 
+            fprintf(stdout, "\n");
         } else if (firstDataReceived == 1) {
             break;
         }
 
     }
 
+    // request
+    printf("\nREQUESTED URL: %s\n", client_request.absolute_url);
+
+
+    fprintf(stdout, "\n");
 
     /**
      * Sends response 
      */
-     if (BAD_REQUEST == 0) {
+    if (BAD_REQUEST == 0) {
         send_response(clientFile, 400, "Bad Request", "Bad Request\r\n");
     } else if (!(client_request.major_version == 1 && (client_request.minor_version >= 0 || client_request.minor_version <= 1))) {
         send_response(clientFile, 505, "HTTP Version not supported", "HTTP Version not supported\r\n");
-    } 
-    else if (client_request.method == HTTP_UNSUPPORTED) {
+    } else if (client_request.method == HTTP_UNSUPPORTED) {
         send_response(clientFile, 405, "Method Not Allowed", "Method Not Allowed\r\n");
-    } else if (strcmp(client_request.url, "/") == 0) {
-        send_response(clientFile, 200, "OK", "<h1>Hello World!</h1> <p>My first content</p>\r\n");
     } else {
-        send_response(clientFile, 404, "Not Found", "<h1>My bad! 404 error!</h1> <p>Sorry, this page doesn't exists...</p>\r\n");
+
+        // check file
+            int filepath = check_and_open(client_request.absolute_url, document_root);
+        if (filepath == -1) {
+            send_response(clientFile, 404, "Not Found", "<h1>My bad! 404 error!</h1> <p>Sorry, this page doesn't exists...</p>\r\n");
+        } else {
+            send_file(clientFile, filepath);
+        }
+
     }
 
 
 
+
+    fprintf(stdout, "Client closed connection.\n\n");
     exit(0);
 }
 
@@ -122,7 +132,7 @@ int parse_http_request(const char *request_line, http_request *request) {
         for (i = 0; i < len; ++i)
             free(list[i]);
         free(list);
-        
+
         return 0;
 
     }
@@ -141,8 +151,8 @@ int parse_http_request(const char *request_line, http_request *request) {
      */
     request->url = list[1];
     request->absolute_url = rewrite_url(list[1]);
-    
-    
+
+
     /**
      * Version 
      */
@@ -232,9 +242,36 @@ void send_response(FILE *client, int code, const char *reason_phrase, const char
 
 
 
+/**
+ * 
+ * @param client
+ * @param file
+ */
+void send_file(FILE *client, int file){
+    file=file;
+    int size = get_file_size(file);
+    
+    FILE *fileStream;
+    fileStream = fdopen(file, "r");
+    
+     // send status
+    send_status(client, 200, "OK");
+    fprintf(client, "Connection: close\r\n");
+    
+   // send_contenttype(client, )
+   // fprintf(client, "Content-type: image/svg+xml\r\n");
+    
+    // content length
+    fprintf(client, "Content-length: %d\r\n", size);
+    fprintf(client, "\r\n");
 
-
-
-
+    char part[255];
+    while(fgets(part, 255, fileStream)){
+        fprintf(client, "%s", part);
+    }
+    
+    // sends
+    fflush(client);
+}
 
 

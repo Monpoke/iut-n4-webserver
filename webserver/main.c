@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 #include "fileReader.h"
 #include "client.h"
@@ -21,12 +22,14 @@ int CLIENT_ID = 0;
  * @param sig
  */
 void traitement_signal(int sig) {
-    printf("Signal received: %d\n", sig);
+    // don't want to print...
+    sig = sig;
+    // printf("Signal received: %d\n", sig);
 
     int status = 0;
 
     // kill zombies
-    while (waitpid(-1, &status, WNOHANG)!=-1) {
+    while (waitpid(-1, &status, WNOHANG) != -1) {
     }
 
 }
@@ -39,7 +42,7 @@ void initialiser_signaux(void) {
     if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
         perror("signal");
     }
-    
+
     struct sigaction sa;
     sa.sa_handler = traitement_signal;
     sigemptyset(&sa.sa_mask);
@@ -53,7 +56,7 @@ void initialiser_signaux(void) {
  * Listens to clients
  * @param server
  */
-void createClient(int server) {
+void createClient(int server, char * document_root) {
 
 
     int socket_client;
@@ -75,10 +78,8 @@ void createClient(int server) {
 
         // Call client
         if (pid == 0) {
-            clientLoop(CLIENT_ID, socket_client);
+            clientLoop(socket_client, document_root);
         } else {
-
-
             close(socket_client);
         }
 
@@ -89,13 +90,39 @@ void createClient(int server) {
 }
 
 /**
+ * 
+ * @param argc
+ * @param argv
+ */
+char * open_documentroot(int argc, char** argv) {
+    // directory
+    if (argc != 2) {
+        printf("usage: ./sushila DIRECTORY\n");
+        exit(1);
+    }
+    
+    char * document_root = argv[1];
+    
+    if(open(document_root, O_RDONLY)==-1){
+        perror("Document root");
+        exit(1);
+    }
+    
+    return document_root;
+}
+
+/**
  * Main program
  * @return 
  */
-int main() {
-    printf("Server launched:\n");
+int main(int argc, char** argv) {
+
+    // document root
+    char* docroot = open_documentroot(argc, argv);
+
 
     int server = creer_serveur(WEBSERVER_PORT);
+    printf("Server launched:\n");
 
     // Signals
     initialiser_signaux();
@@ -104,7 +131,7 @@ int main() {
      * Get client request
      * @return 
      */
-    createClient(server);
+    createClient(server, docroot);
 
     return 0;
 
