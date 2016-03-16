@@ -13,6 +13,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <errno.h>
 
 #include "fileReader.h"
 #include "tools.h"
@@ -73,16 +74,17 @@ int check_and_open(const char* url, const char *document_root) {
     printf("Open file: %s\n", newPath);
 
     int d = 0;
+    d = fopen(newPath,"r");
 
     DIR * dir = opendir(newPath);
 
-    if ((d = open(newPath, O_RDONLY)) == -1) {
+    if (dir != NULL || errno == "EACCES"){
+        perror("No right to go");
+        return -2;
+    }else if(d == -1){
         perror("Can't access file");
         return -1;
-    }else if (dir != NULL){
-        perror("Can't access directory");
-        return -2;
-    }else {
+    }else{
         return d;
     }
 
