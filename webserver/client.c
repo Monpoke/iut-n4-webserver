@@ -90,10 +90,11 @@ void clientLoop(int socket_client, char * document_root) {
             int filepath = check_and_open(client_request.absolute_url, document_root);
         if (filepath == -1) {
             send_response(clientFile, 404, "Not Found", "<h1>My bad! 404 error!</h1> <p>Sorry, this page doesn't exists...</p>\r\n");
-        } else {
+        } else if(filepath == -2) {
+            send_response(clientFile, 403, "Forbidden", "<h1>403 - Forbidden</h1> <p>Sorry! Access denied :(</p>\r\n");
+        }else{
             send_file(clientFile, filepath);
         }
-
     }
 
 

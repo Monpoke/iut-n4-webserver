@@ -12,6 +12,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <dirent.h>
+
 #include "fileReader.h"
 #include "tools.h"
 
@@ -71,10 +73,16 @@ int check_and_open(const char* url, const char *document_root) {
     printf("Open file: %s\n", newPath);
 
     int d = 0;
+
+    DIR * dir = opendir(newPath);
+
     if ((d = open(newPath, O_RDONLY)) == -1) {
         perror("Can't access file");
         return -1;
-    } else {
+    }else if (dir != NULL){
+        perror("Can't access directory");
+        return -2;
+    }else {
         return d;
     }
 
