@@ -13,6 +13,7 @@
 #include  "http.h"
 #include "client.h"
 #include "fileReader.h"
+#include "mime.h"
 
 void clientLoop(int socket_client, char * document_root) {
 
@@ -87,11 +88,11 @@ void clientLoop(int socket_client, char * document_root) {
     } else {
 
         // check file
-            int filepath = check_and_open(client_request.absolute_url, document_root);
+        int filepath = check_and_open(client_request.absolute_url, document_root, &client_request);
         if (filepath == -1) {
             send_response(clientFile, 404, "Not Found", "<h1>My bad! 404 error!</h1> <p>Sorry, this page doesn't exists...</p>\r\n");
         } else {
-            send_file(clientFile, filepath);
+            send_file(clientFile, filepath, &client_request);
         }
 
     }
@@ -240,38 +241,40 @@ void send_response(FILE *client, int code, const char *reason_phrase, const char
 
 }
 
-
-
 /**
  * 
  * @param client
  * @param file
  */
-void send_file(FILE *client, int file){
-    file=file;
+void send_file(FILE *client, int file, http_request * client_request) {
+    file = file;
     int size = get_file_size(file);
-    
+
     FILE *fileStream;
     fileStream = fdopen(file, "r");
-    
-     // send status
+
+    // send status
     send_status(client, 200, "OK");
     fprintf(client, "Connection: close\r\n");
-    
-   // send_contenttype(client, )
-   // fprintf(client, "Content-type: image/svg+xml\r\n");
-    
+
+    send_contenttype(client, client_request);
+
     // content length
     fprintf(client, "Content-length: %d\r\n", size);
     fprintf(client, "\r\n");
 
     char part[255];
-    while(fgets(part, 255, fileStream)){
+    while (fgets(part, 255, fileStream)) {
         fprintf(client, "%s", part);
     }
-    
+
     // sends
     fflush(client);
 }
 
+void send_contenttype(FILE * client, http_request * client_request) {
+    // find mimetype
+    char * contenttype = getContentType(client_request->extension);
 
+    fprintf(client, "Content-type: %s\r\n", contenttype);
+}

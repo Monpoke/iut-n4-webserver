@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include "fileReader.h"
 #include "tools.h"
+#include "http.h"
 
 /**
  * Delete query string
@@ -44,16 +45,20 @@ char *rewrite_url(char *url) {
 
 }
 
+void findExtension(char * path) {
+
+}
+
 /**
  * Opens a file
  * @param url
  * @param document_root
  * @return 
  */
-int check_and_open(const char* url, const char *document_root) {
+int check_and_open(const char* url, const char *document_root, http_request *request) {
 
-    printf("REquesturl: %s\n\n",url);
-    
+    printf("REquesturl: %s\n\n", url);
+
     //document_root+=url;
 
     char totalPath[500];
@@ -69,6 +74,18 @@ int check_and_open(const char* url, const char *document_root) {
     newPath = replace_str(newPath, "//", "/");
 
     printf("Open file: %s\n", newPath);
+
+    request->filepath = newPath;
+
+    // Extension
+    char *t = strrchr(newPath, '.');
+    if (!t) {
+        request->extension = NULL;
+    } else {
+        t++;
+        request->extension=t;
+    }
+
 
     int d = 0;
     if ((d = open(newPath, O_RDONLY)) == -1) {

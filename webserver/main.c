@@ -120,10 +120,6 @@ char * open_documentroot(int argc, char** argv) {
 int main(int argc, char** argv) {
 
     
-    // Mimes
-    loadMimes();
-    exit(0);
-    
     // document root
     char* docroot = open_documentroot(argc, argv);
 
@@ -137,11 +133,12 @@ int main(int argc, char** argv) {
     // Signaux
     initialiser_signaux();
 
+    
     /**
      * Get client request
      * @return 
      */
-    createClient(server, docroot);
+    //createClient(server, docroot);
 
     return 0;
 

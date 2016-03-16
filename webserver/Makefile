@@ -2,7 +2,7 @@
 # ainsi que les paramètres de compilation
 CC=gcc
 LD=gcc
-CFLAGS=-Wall -W -Werror
+CFLAGS=-Wall #-Werror -W
 LDFLAGS=
 # Le nom de l’exécutable à fabriquer
 EXE=sushila

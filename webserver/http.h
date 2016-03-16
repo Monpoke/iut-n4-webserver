@@ -20,6 +20,8 @@ typedef struct  {
     int minor_version;
     char *url;
     char *absolute_url;
+    char * filepath;
+    char *extension;
 } http_request;
 
 

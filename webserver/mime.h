@@ -17,6 +17,11 @@ typedef struct  {
 
 void loadMimes();
 
+char * getContentType(char * extension);
+void parseExtensions(mime * mimetypes, char * contentType, char * extensions);
+void createExtension(mime * contenttype, char * contentType, char * extension);
+char * extractTypesAndExtensions(char*line, char*ptr) ;
+
 
 #endif	/* MIME_H */
 

@@ -20,7 +20,8 @@ char *fgets_or_exit(char *buffer, int size, FILE *stream);
 int parse_http_request(const char *request_line, http_request *request);
 void send_response(FILE* client, int code, const char *reason_phrase, const char * message_body);
 void send_status(FILE *client, int code, const char * reason_phrase);
-void send_file(FILE *client, int file);
+void send_file(FILE *client, int file, http_request * client_request);
+void send_contenttype(FILE * client, http_request * client_request);
 
 #endif	/* CLIENT_H */
 
