@@ -12,6 +12,9 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <dirent.h>
+#include <errno.h>
+
 #include "fileReader.h"
 #include "tools.h"
 #include "http.h"
@@ -88,10 +91,17 @@ int check_and_open(const char* url, const char *document_root, http_request *req
 
 
     int d = 0;
-    if ((d = open(newPath, O_RDONLY)) == -1) {
+    d = fopen(newPath,"r");
+
+    DIR * dir = opendir(newPath);
+
+    if (dir != NULL || errno == "EACCES"){
+        perror("No right to go");
+        return -2;
+    }else if(d == -1){
         perror("Can't access file");
         return -1;
-    } else {
+    }else{
         return d;
     }
 

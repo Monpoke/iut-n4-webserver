@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <dirent.h>
 
 #include "fileReader.h"
 #include "client.h"
@@ -102,7 +103,15 @@ char * open_documentroot(int argc, char** argv) {
         exit(1);
     }
     
-    char * document_root = argv[1];
+    DIR * dir = opendir(argv[1]);
+    char * document_root ;
+
+    if(dir != NULL){
+        document_root = argv[1];
+    }else{
+        perror("Repository error");
+        exit(1);
+    }
     
     if(open(document_root, O_RDONLY)==-1){
         perror("Document root");
@@ -120,6 +129,8 @@ char * open_documentroot(int argc, char** argv) {
 int main(int argc, char** argv) {
 
     
+    // Mimes
+    
     // document root
     char* docroot = open_documentroot(argc, argv);
 
@@ -128,7 +139,7 @@ int main(int argc, char** argv) {
     printf("Server launched:\n");
 
     // Mimes
-    loadMimes();
+    //loadMimes();
     
     // Signaux
     initialiser_signaux();
