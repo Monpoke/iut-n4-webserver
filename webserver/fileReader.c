@@ -73,8 +73,11 @@ int check_and_open(const char* url, const char *document_root, http_request *req
      */
     // replace ".." and "//"
     char* newPath = replace_str(totalPath, "//", "/");
-    newPath = replace_str(newPath, "..", "");
-    newPath = replace_str(newPath, "//", "/");
+    while(strstr(newPath, "..") != NULL){
+        newPath = replace_str(newPath, "..", "");
+        newPath = replace_str(newPath, "//", "/");
+
+    }
 
     printf("Open file: %s\n", newPath);
 
