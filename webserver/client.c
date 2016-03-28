@@ -94,11 +94,10 @@ void clientLoop(int socket_client, char * document_root) {
         } else if(filepath == -2) {
             send_response(clientFile, 403, "Forbidden", "<h1>403 - Forbidden</h1> <p>Sorry! Access denied :(</p>\r\n");
         }else{
-            send_file(clientFile, filepath,&client_request);
+            
+            send_file(clientFile, filepath, &client_request);
         }
     }
-
-
 
 
     fprintf(stdout, "Client closed connection.\n\n");
@@ -230,7 +229,7 @@ void send_response(FILE *client, int code, const char *reason_phrase, const char
 
     // content length
     fprintf(client, "Content-length: %zu\r\n", strlen(message_body));
-    ;
+    
 
     fprintf(client, "\r\n");
 
@@ -248,11 +247,28 @@ void send_response(FILE *client, int code, const char *reason_phrase, const char
  * @param file
  */
 void send_file(FILE *client, int file, http_request * client_request) {
-    file = file;
-    int size = get_file_size(file);
+    
+    
+    unsigned long size;// = get_file_size(file);
+
+    // buffer
+    unsigned char* buffer;
 
     FILE *fileStream;
     fileStream = fdopen(file, "r");
+
+    if(fileStream == NULL){
+        perror("filestream");
+        exit(1);
+    }
+
+
+    // check size
+    fseek(fileStream, 0, SEEK_END);
+    size = ftell(fileStream);
+    fseek(fileStream, 0, SEEK_SET);
+
+
 
     // send status
     send_status(client, 200, "OK");
@@ -261,13 +277,24 @@ void send_file(FILE *client, int file, http_request * client_request) {
     send_contenttype(client, client_request);
 
     // content length
-    fprintf(client, "Content-length: %d\r\n", size);
+    fprintf(client, "Content-length: %lu\r\n", size);
+    printf("SIZE to send: %lu\n", size);
     fprintf(client, "\r\n");
 
-    char part[255];
-    while (fgets(part, 255, fileStream)) {
-        fprintf(client, "%s", part);
-    }
+         // write buffer
+         buffer = malloc(size);
+         if(buffer == NULL){
+             perror("buffer null");
+             exit(1);
+         }
+        
+         // mise en buffer
+         fread(buffer, 1, size, fileStream);
+        
+        fwrite(buffer, 1, size, client);
+        
+        // free buffer
+        free(buffer);
 
     // sends
     fflush(client);
@@ -276,6 +303,10 @@ void send_file(FILE *client, int file, http_request * client_request) {
 void send_contenttype(FILE * client, http_request * client_request) {
     // find mimetype
     char * contenttype = getContentType(client_request->extension);
-
-    fprintf(client, "Content-type: %s\r\n", contenttype);
+    if(contenttype != NULL){
+        printf("Sending this contenttype: %s\n", contenttype);
+        fprintf(client, "Content-type: %s\r\n", contenttype);
+    } else {
+        printf("Not known... for extension: %s\n", client_request->extension);
+    }
 }

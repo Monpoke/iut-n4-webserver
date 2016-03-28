@@ -82,27 +82,47 @@ int check_and_open(const char* url, const char *document_root, http_request *req
 
     // Extension
     char *t = strrchr(newPath, '.');
+    printf("EXTENSION FOR FILE %s -> %s\n", newPath, t);
     if (!t) {
         request->extension = NULL;
     } else {
         t++;
-        request->extension=t;
+        request->extension = malloc(1 + strlen(t));
+        strcpy(request->extension, t);
     }
 
 
-    int d = 0;
-    d = fopen(newPath,"r");
 
-    DIR * dir = opendir(newPath);
-
-    if (dir != NULL || errno == "EACCES"){
-        perror("No right to go");
-        return -2;
-    }else if(d == -1){
-        perror("Can't access file");
-        return -1;
-    }else{
-        return d;
+    /**
+    * check directory
+    */
+    struct stat s;
+    int err = stat(newPath, &s);
+    
+    if(-1 == err) {
+        if(ENOENT == errno) {
+            /* does not exist */
+            return -1;
+        } else {
+            perror("stat");
+            exit(1);
+        }
+    } else {
+        if(S_ISDIR(s.st_mode)) {
+            /* it's a dir */
+            return -2;
+        } else {
+            /* exists but is no dir */
+            int fil;
+                        
+            if((fil = open(newPath, O_RDONLY)) >=0){
+                printf("EXTEN=%s\n\n", request->extension);
+                return fil;
+            } else {
+                perror("File...");
+                exit(1);
+            }
+        }
     }
 
 }
@@ -117,8 +137,6 @@ int get_file_size(int fd) {
     struct stat fileStat;
     if (fstat(fd, &fileStat) < 0)
         return 0;
-
-    printf("truc: %zu\n\n", fileStat.st_size);
 
     return fileStat.st_size;
 }

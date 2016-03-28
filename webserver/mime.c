@@ -16,9 +16,10 @@
 #include "fileReader.h"
 #include "mime.h"
 
+#define NB_MIME 600
 
 int GLOBAL_LINE = 0;
-mime * mimeTypes = NULL;
+mime mimeTypes[NB_MIME];
 
 char * extractTypesAndExtensions(char*line, char*ptr) {
     line = line;
@@ -46,25 +47,28 @@ char * extractTypesAndExtensions(char*line, char*ptr) {
     return ptr;
 }
 
-void createExtension(mime * contenttype, char * contentType, char * extension) {
-    if (strlen(extension) == 0) {
+void createExtension(char * contentType, char * extension) {
+    if (contentType == NULL || strlen(contentType) == 0 || 
+    extension == NULL || strlen(extension) == 0) {
         return;
     }
     
     
     // need realloc?
 
-    contenttype[GLOBAL_LINE].extension = extension;
-    contenttype[GLOBAL_LINE].content_type = contentType;
+    strcpy(mimeTypes[GLOBAL_LINE].extension, extension);
+    strcpy(mimeTypes[GLOBAL_LINE].content_type, contentType);
 
 
-    contenttype[GLOBAL_LINE + 1].extension = NULL;
-    contenttype[GLOBAL_LINE + 1].content_type = NULL;
-    // printf("Create extension %s for contenttype %s\n",extension,contentType);
+   // mimeTypes[GLOBAL_LINE + 1].extension = NULL;
+    //mimeTypes[GLOBAL_LINE + 1].content_type = NULL;
+   // printf("Create extension %s for contenttype %s at index %i\n",extension,contentType,GLOBAL_LINE);
     GLOBAL_LINE++;
+    
+    
 }
 
-void parseExtensions(mime * mimetypes, char * contentType, char * extensions) {
+void parseExtensions(char * contentType, char * extensions) {
 
     int t = strlen(extensions);
     int i = 0;
@@ -86,7 +90,7 @@ void parseExtensions(mime * mimetypes, char * contentType, char * extensions) {
         ptr++;
 
         // create extension
-        createExtension(mimetypes, contentType, extensions);
+        createExtension(contentType, extensions);
 
         extensions = ptr;
     }
@@ -99,8 +103,8 @@ void parseExtensions(mime * mimetypes, char * contentType, char * extensions) {
 
 char * getContentType(char * extension) {
     int i = 0;
-    while (mimeTypes[i].extension != NULL) {
-        printf("%s\n", mimeTypes[i].extension);
+    while (i < NB_MIME) {
+        //printf("%s\n", mimeTypes[i].extension);
         
         if (strcmp(mimeTypes[i].extension, extension) == 0) {
             return mimeTypes[i].content_type;
@@ -122,13 +126,16 @@ void loadMimes() {
     } else {
         FILE * mimeStream = fdopen(mi, "r");
 
+
         // init malloc
-        mimeTypes = malloc(500 * sizeof (mime));
+        //mimeTypes = malloc(500 * sizeof (mime));
         GLOBAL_LINE = 0;
 
         //...
-        mimeTypes[0].extension = NULL;
-        mimeTypes[0].content_type = NULL;
+       // mimeTypes[0].extension = NULL;
+        //mimeTypes[0].content_type = NULL;
+
+
 
 
         char contentType[500];
@@ -153,16 +160,10 @@ void loadMimes() {
             char* extensions = contentType;
             extensions = extractTypesAndExtensions(contentType, extensions);
 
-            parseExtensions(mimeTypes, contentType, extensions);
+            parseExtensions(contentType, extensions);
             
-            int j =0;
-            for(j=0; mimeTypes[j].extension != NULL; j++){
-                //printf("%s\n", mimeTypes[j].extension);
-            }
             
         }
-
-        printf("%s\n", getContentType("png"));
 
     }
 

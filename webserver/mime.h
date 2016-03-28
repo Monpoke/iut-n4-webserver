@@ -10,16 +10,16 @@
 
 
 typedef struct  {
-    char *content_type;
-    char *extension;
+    char content_type [100];
+    char extension[100];
 } mime;
 
 
 void loadMimes();
 
 char * getContentType(char * extension);
-void parseExtensions(mime * mimetypes, char * contentType, char * extensions);
-void createExtension(mime * contenttype, char * contentType, char * extension);
+void parseExtensions(char * contentType, char * extensions);
+void createExtension(char * contentType, char * extension);
 char * extractTypesAndExtensions(char*line, char*ptr) ;
 
 

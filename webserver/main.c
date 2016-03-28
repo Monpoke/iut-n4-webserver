@@ -139,7 +139,9 @@ int main(int argc, char** argv) {
     printf("Server launched:\n");
 
     // Mimes
-    //loadMimes();
+    loadMimes();
+    
+    
     
     // Signaux
     initialiser_signaux();
@@ -149,7 +151,7 @@ int main(int argc, char** argv) {
      * Get client request
      * @return 
      */
-    //createClient(server, docroot);
+    createClient(server, docroot);
 
     return 0;
 
