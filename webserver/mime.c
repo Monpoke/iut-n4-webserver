@@ -100,12 +100,16 @@ void parseExtensions(char * contentType, char * extensions) {
 
 
 
-
+/**
+ * Gets a content type by its extension.
+ * @brief 
+ * @param extension
+ * @return 
+ */
 char * getContentType(char * extension) {
     int i = 0;
     while (i < NB_MIME) {
-        //printf("%s\n", mimeTypes[i].extension);
-        
+       
         if (strcmp(mimeTypes[i].extension, extension) == 0) {
             return mimeTypes[i].content_type;
         }
@@ -128,15 +132,7 @@ void loadMimes() {
 
 
         // init malloc
-        //mimeTypes = malloc(500 * sizeof (mime));
         GLOBAL_LINE = 0;
-
-        //...
-       // mimeTypes[0].extension = NULL;
-        //mimeTypes[0].content_type = NULL;
-
-
-
 
         char contentType[500];
         int i = -1;

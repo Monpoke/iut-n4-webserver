@@ -12,6 +12,8 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 #include "fileReader.h"
 #include "client.h"
@@ -26,7 +28,6 @@ int CLIENT_ID = 0;
 void traitement_signal(int sig) {
     // don't want to print...
     sig = sig;
-    // printf("Signal received: %d\n", sig);
 
     int status = 0;
 
@@ -103,22 +104,30 @@ char * open_documentroot(int argc, char** argv) {
         exit(1);
     }
     
-    DIR * dir = opendir(argv[1]);
-    char * document_root ;
-
-    if(dir != NULL){
-        document_root = argv[1];
-    }else{
-        perror("Repository error");
-        exit(1);
+    
+    /**
+    * check directory
+    */
+    struct stat s;
+    int err = stat(argv[1], &s);
+    
+    if(-1 == err) {
+        if(ENOENT == errno) {
+            /* does not exist */
+            perror("Repository error");
+            exit(1);
+        } else {
+            perror("stat");
+            exit(1);
+        }
+    } else {
+        if(!S_ISDIR(s.st_mode)) {
+            perror("Document root error");
+            exit(1);
+        } 
     }
     
-    if(open(document_root, O_RDONLY)==-1){
-        perror("Document root");
-        exit(1);
-    }
-    
-    return document_root;
+    return argv[1];
 }
 
 
