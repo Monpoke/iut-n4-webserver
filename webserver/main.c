@@ -18,6 +18,7 @@
 #include "fileReader.h"
 #include "client.h"
 #include "mime.h"
+#include "stats.h"
 
 int CLIENT_ID = 0;
 
@@ -67,15 +68,18 @@ void createClient(int server, char * document_root) {
 
     // BOUCLE POUR ECOUTER TOUUUUT LES CLIENTS
     while (1) {
-        printf("Waiting for client %d\n", CLIENT_ID);
+        //printf("Waiting for client %d\n", CLIENT_ID);
         socket_client = accept(server, NULL, NULL);
         CLIENT_ID++;
+
+        get_stats()->served_connections++;
 
         if (socket_client == -1) {
             perror("accept");
             /*  traitement d’erreur  */
             printf("Server error...");
         }
+
 
         pid_t pid = fork();
 
@@ -138,8 +142,6 @@ char * open_documentroot(int argc, char** argv) {
 int main(int argc, char** argv) {
 
     
-    // Mimes
-    
     // document root
     char* docroot = open_documentroot(argc, argv);
 
@@ -150,6 +152,8 @@ int main(int argc, char** argv) {
     // Mimes
     loadMimes();
     
+    // Load stats
+    init_stats();
     
     
     // Signaux

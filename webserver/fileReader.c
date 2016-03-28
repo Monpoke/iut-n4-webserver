@@ -25,13 +25,10 @@
  * @return 
  */
 char *rewrite_url(char *url) {
-    printf("URL: %s\n", url);
-
-    //url=strdup(url);
-
+    
 
     if (strcmp(url, "/") == 0) {
-        return "index.html";
+        return "/index.html";
     }
 
     // char absolute[255];
@@ -48,9 +45,6 @@ char *rewrite_url(char *url) {
 
 }
 
-void findExtension(char * path) {
-
-}
 
 /**
  * Opens a file
@@ -60,7 +54,7 @@ void findExtension(char * path) {
  */
 int check_and_open(const char* url, const char *document_root, http_request *request) {
 
-    printf("REquesturl: %s\n\n", url);
+    //printf("REquesturl: %s\n\n", url);
 
     //document_root+=url;
 
@@ -79,13 +73,12 @@ int check_and_open(const char* url, const char *document_root, http_request *req
 
     }
 
-    printf("Open file: %s\n", newPath);
 
     request->filepath = newPath;
 
     // Extension
     char *t = strrchr(newPath, '.');
-    printf("EXTENSION FOR FILE %s -> %s\n", newPath, t);
+    
     if (!t) {
         request->extension = NULL;
     } else {
@@ -119,7 +112,6 @@ int check_and_open(const char* url, const char *document_root, http_request *req
             int fil;
                         
             if((fil = open(newPath, O_RDONLY)) >=0){
-                printf("EXTEN=%s\n\n", request->extension);
                 return fil;
             } else {
                 perror("File...");

@@ -14,6 +14,7 @@
 #include "client.h"
 #include "fileReader.h"
 #include "mime.h"
+#include "stats.h"
 
 void clientLoop(int socket_client, char * document_root) {
 
@@ -61,9 +62,8 @@ void clientLoop(int socket_client, char * document_root) {
             nbLine++;
 
 
-            fprintf(stdout, contentLineClient);
+            //fprintf(stdout, contentLineClient);
 
-            fprintf(stdout, "\n");
         } else if (firstDataReceived == 1) {
             break;
         }
@@ -71,10 +71,8 @@ void clientLoop(int socket_client, char * document_root) {
     }
 
     // request
-    printf("\nREQUESTED URL: %s\n", client_request.absolute_url);
+    //printf("\nREQUESTED URL: %s\n", client_request.absolute_url);
 
-
-    fprintf(stdout, "\n");
 
     /**
      * Sends response 
@@ -87,20 +85,32 @@ void clientLoop(int socket_client, char * document_root) {
         send_response(clientFile, 405, "Method Not Allowed", "Method Not Allowed\r\n");
     } else {
 
-        // check file
-        int filepath = check_and_open(client_request.absolute_url, document_root, &client_request);
-        if (filepath == -1) {
-            send_response(clientFile, 404, "Not Found", "<h1>My bad! 404 error!</h1> <p>Sorry, this page doesn't exists...</p>\r\n");
-        } else if(filepath == -2) {
-            send_response(clientFile, 403, "Forbidden", "<h1>403 - Forbidden</h1> <p>Sorry! Access denied :(</p>\r\n");
-        }else{
+        
+        // if stats
+        if(strcmp(client_request.absolute_url, "/stats")==0){
+            send_stats(clientFile, &client_request);
+        } else {
+
+            // check file
+            int filepath = check_and_open(client_request.absolute_url, document_root, &client_request);
+            if (filepath == -1) {
+                send_response(clientFile, 404, "Not Found", "<h1>My bad! 404 error!</h1> <p>Sorry, this page doesn't exists...</p>\r\n");
+            } else if(filepath == -2) {
+                send_response(clientFile, 403, "Forbidden", "<h1>403 - Forbidden</h1> <p>Sorry! Access denied :(</p>\r\n");
+            }else{
+                
+                // request ok
+                get_stats()->ok_200++;
+                
+                send_file(clientFile, filepath, &client_request);
+                
+            }
             
-            send_file(clientFile, filepath, &client_request);
         }
     }
-
-
-    fprintf(stdout, "Client closed connection.\n\n");
+    
+    get_stats()->served_requests++;
+    //fprintf(stdout, "Client closed connection.\n\n");
     exit(0);
 }
 
@@ -221,6 +231,17 @@ void send_status(FILE *client, int code, const char * reason_phrase) {
  */
 void send_response(FILE *client, int code, const char *reason_phrase, const char * message_body) {
 
+    // stats
+    if(code == 404){
+        get_stats()->ko_404++;
+    } else if(code == 403){
+        get_stats()->ko_403++;
+    } else if(code==200) {
+        get_stats()->ok_200++;
+    } else {
+        get_stats()->ko_400++;
+    }
+    
     // send status
     send_status(client, code, reason_phrase);
 
@@ -278,7 +299,6 @@ void send_file(FILE *client, int file, http_request * client_request) {
 
     // content length
     fprintf(client, "Content-length: %lu\r\n", size);
-    printf("SIZE to send: %lu\n", size);
     fprintf(client, "\r\n");
 
          // write buffer
@@ -304,9 +324,12 @@ void send_contenttype(FILE * client, http_request * client_request) {
     // find mimetype
     char * contenttype = getContentType(client_request->extension);
     if(contenttype != NULL){
-        printf("Sending this contenttype: %s\n", contenttype);
+        //printf("Sending this contenttype: %s\n", contenttype);
         fprintf(client, "Content-type: %s\r\n", contenttype);
     } else {
         printf("Not known... for extension: %s\n", client_request->extension);
     }
 }
+
+
+
