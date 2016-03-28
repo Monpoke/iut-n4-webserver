@@ -5,9 +5,14 @@
 #include <string.h>
 #include <sys/types.h>      
  #include <sys/mman.h>
+#include <semaphore.h>
+#include <pthread.h>
 
 
 static web_stats * stats;
+
+static sem_t * semaphore;
+
 //static web_stats * stats_shared;
 
 int init_stats(){
@@ -21,11 +26,27 @@ int init_stats(){
     stats->ko_400=0;
     stats->ko_403=0;
     stats->ko_404=0;
+    
+    
+    // init semaphore
+    semaphore = mmap(NULL, sizeof(sem_t), PROT_EXEC|PROT_READ|PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    
+    sem_init(semaphore, 0, 10);
+    
     return 0;
 }
 
+void beforeUpdateStats(){
+    sem_wait(semaphore);
+}
+
+
 web_stats * get_stats(){
     return stats;
+}
+
+void statsUpdated(){
+    sem_post(semaphore);
 }
 
 
@@ -43,7 +64,8 @@ void send_stats(FILE * clientFile, http_request * client_request){
     sprintf(buffer, "<tr><td>Served requests</td><td>%i</td></tr>", stats->served_requests);
     strcat(message, buffer);
     
-    sprintf(buffer, "<tr><td>Served connections</td><td>%i</td></tr>", stats->served_connections);
+    // -1 on affiche pas la page courante !
+    sprintf(buffer, "<tr><td>Served connections</td><td>%i</td></tr>", stats->served_connections-1);
     strcat(message, buffer);
     
     sprintf(buffer, "<tr><td>200</td><td>%i</td></tr>", stats->ok_200);

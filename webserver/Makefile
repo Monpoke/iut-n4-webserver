@@ -3,7 +3,7 @@
 CC=gcc
 LD=gcc
 CFLAGS=-Wall #-Werror -W
-LDFLAGS=
+LDFLAGS=-pthread
 # Le nom de l’exécutable à fabriquer
 EXE=sushila
 # Les variables HEADERS, CFILES et OBJS vont contenir respectivement
@@ -25,7 +25,7 @@ all: $(EXE)
 # Cette règle permet de construire l’exécutable. Elle dépend des fichiers
 # .o et effectue l’édition de lien. Rien de nouveau ici
 $(EXE): $(OBJS)
-	$(LD) $^ $(LDFLAGS) -o $@
+	$(LD) $^ $(LDFLAGS) -o $@ 
 
 # Cette règle permet de construire automatiquement les règles
 # de compilation pour chacun des fichiers .c

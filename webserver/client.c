@@ -100,7 +100,9 @@ void clientLoop(int socket_client, char * document_root) {
             }else{
                 
                 // request ok
+                beforeUpdateStats();
                 get_stats()->ok_200++;
+                statsUpdated();
                 
                 send_file(clientFile, filepath, &client_request);
                 
@@ -231,6 +233,7 @@ void send_status(FILE *client, int code, const char * reason_phrase) {
  */
 void send_response(FILE *client, int code, const char *reason_phrase, const char * message_body) {
 
+    beforeUpdateStats();
     // stats
     if(code == 404){
         get_stats()->ko_404++;
@@ -241,6 +244,7 @@ void send_response(FILE *client, int code, const char *reason_phrase, const char
     } else {
         get_stats()->ko_400++;
     }
+    statsUpdated();
     
     // send status
     send_status(client, code, reason_phrase);

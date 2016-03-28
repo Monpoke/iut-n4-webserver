@@ -17,4 +17,6 @@ typedef struct {
 web_stats * get_stats();
 int init_stats();
 void send_stats(FILE * clientFile, http_request * client_request);
+void beforeUpdateStats();
+void statsUpdated();
 #endif

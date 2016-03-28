@@ -72,7 +72,9 @@ void createClient(int server, char * document_root) {
         socket_client = accept(server, NULL, NULL);
         CLIENT_ID++;
 
+        beforeUpdateStats();
         get_stats()->served_connections++;
+        statsUpdated();
 
         if (socket_client == -1) {
             perror("accept");
